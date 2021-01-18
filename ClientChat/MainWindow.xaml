@@ -7,12 +7,12 @@
         mc:Ignorable="d"
         Title="Chat Client" Height="396" WindowStartupLocation="CenterScreen" Width="599" Closing="Window_Closing">
     <Canvas x:Name="cvs" Background="Gainsboro">
-        <TextBox x:Name="tbNickname" Height="23" TextWrapping="Wrap" Width="177" Canvas.Left="10" Canvas.Top="66" RenderTransformOrigin="0.483,0.087"/>
+        <TextBox x:Name="tbNickname" Height="23" TextWrapping="Wrap" Width="177" Canvas.Left="10" Canvas.Top="66" RenderTransformOrigin="0.483,0.087" GotFocus="tbNickname_GotFocus"/>
         <Label x:Name="lbNickname" Content="Nickname" Canvas.Left="10" Canvas.Top="40"/>
         <Button x:Name="btnAnmelden" Content="Anmelden" Width="80" Canvas.Left="204" Canvas.Top="66" Height="23" RenderTransformOrigin="0.538,0.043" Click="btnAnmelden_Click"/>
         <Button x:Name="btnAbmelden" Content="Abmelden" Width="80" Canvas.Left="300" Canvas.Top="66" Height="23" RenderTransformOrigin="-0.375,0.522" Click="btnAbmelden_Click"/>
-        <TextBox x:Name="tbChatMessage" Height="23" TextWrapping="Wrap" Width="446" Canvas.Left="10" Canvas.Top="312" RenderTransformOrigin="0.592,7.348"/>
-        <Button x:Name="btnAbsenden" Content="Absenden" Width="80" Canvas.Left="470" Canvas.Top="312" Height="23"/>
+        <TextBox x:Name="tbChatMessage" Height="23" TextWrapping="Wrap" Width="446" Canvas.Left="10" Canvas.Top="312" RenderTransformOrigin="0.592,7.348" GotFocus="tbChatMessage_GotFocus"/>
+        <Button x:Name="btnAbsenden" Content="Absenden" Width="80" Canvas.Left="470" Canvas.Top="312" Height="23" Click="btnAbsenden_Click"/>
         <TextBox x:Name="tbChatShowMessages" Height="185" Canvas.Left="10" TextWrapping="Wrap" Canvas.Top="110" Width="540"/>
         <Menu Name="MainMenu" IsMainMenu="True" HorizontalAlignment="Left" Height="21" VerticalAlignment="Top" Width="48" RenderTransformOrigin="0.786,0.875">
             <MenuItem Header="Server" Width="48" Focusable="False" Height="21">

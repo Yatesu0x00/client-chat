@@ -50,13 +50,15 @@ namespace ClientChat
             btnAbmelden.IsEnabled = false;
             tbChatMessage.IsEnabled = false;
             btnAbsenden.IsEnabled = false;
+            tbChatShowMessages.Clear();
+            tbChatMessage.Clear();
+            tbNickname.Clear();
             //disconnect.IsEnabled = false;
         }
 
         private void ThreadFunction()
         {
-            data = "";
-            bytes = new byte[10000];
+            data = string.Empty;       
 
             while(connectStatus == true)
             {
@@ -70,7 +72,7 @@ namespace ClientChat
                         }));
 
                         s.Send(Encoding.ASCII.GetBytes(data));
-                        s.Receive(bytes);
+
                         zustand = 0;
                     }
                     else if (zustand == 2)
@@ -81,39 +83,43 @@ namespace ClientChat
                         }));
 
                         s.Send(Encoding.ASCII.GetBytes(data));
-                        s.Receive(bytes);
 
                         zustand = 0;
                     }
                     else if (zustand == 3)
                     {
-                        Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-                        {
-                            data = tbNickname.Text + "*";
-                        }));
+                        //Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                        //{
+                        //    data = tbNickname.Text + "*";
+                        //}));
 
-                        s.Send(Encoding.ASCII.GetBytes(data));
-                        s.Receive(bytes);
+                        //s.Send(Encoding.ASCII.GetBytes(data));
 
                         zustand = 0;
                     }
-                    //else if (zustand == 4)
-                    //{
-                    //    Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-                    //    {
-                    //        data = tbNickname.Text + "#";
-                    //    }));
+                    else if (zustand == 4)
+                    {
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                        {
+                            data = tbNickname.Text + ": " + tbChatMessage.Text + "#";
+                        }));
 
-                    //    s.Send(Encoding.ASCII.GetBytes(data));
-                    //    s.Receive(bytes);
+                        s.Send(Encoding.ASCII.GetBytes(data));
 
-                    //    zustand = 0;
-                    //}
+                        zustand = 0;
+                    }
                     else
                     {
                         if (s.Available > 0)
                         {
+                            bytes = new byte[512];
+
                             s.Receive(bytes);
+
+                            Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                            {
+                                tbChatShowMessages.Text += Encoding.ASCII.GetString(bytes) + "\n";
+                            }));
                         }
                     }
                     Thread.Sleep(50);
@@ -148,16 +154,25 @@ namespace ClientChat
 
         private void disconnect_Click(object sender, RoutedEventArgs e)
         {
-            connectStatus = false;
             zustand = 3;
+
+            connectStatus = false;
+
+            data = tbNickname.Text + "*";
+
+            s.Send(Encoding.ASCII.GetBytes(data));
+
             s.Close();
+
             connect.IsEnabled = true;
             disconnect.IsEnabled = false;
+            defaultBtns();
         }
 
         private void btnAnmelden_Click(object sender, RoutedEventArgs e)
         {
             zustand = 1;
+
             tbNickname.IsEnabled = false;
             btnAnmelden.IsEnabled = false;
             btnAbmelden.IsEnabled = true;
@@ -169,6 +184,9 @@ namespace ClientChat
         private void btnAbmelden_Click(object sender, RoutedEventArgs e)
         {
             zustand = 2;
+
+            tbChatShowMessages.Clear();
+            tbChatMessage.Clear();
             tbNickname.IsEnabled = true;
             btnAnmelden.IsEnabled = true;
             btnAbmelden.IsEnabled = false;
@@ -184,6 +202,21 @@ namespace ClientChat
                 thread_1.Abort();
             }
             catch { }
+        }
+
+        private void btnAbsenden_Click(object sender, RoutedEventArgs e)
+        {
+            zustand = 4;
+        }
+
+        private void tbNickname_GotFocus(object sender, RoutedEventArgs e)
+        {
+            ((TextBox)sender).Text = "";
+        }
+
+        private void tbChatMessage_GotFocus(object sender, RoutedEventArgs e)
+        {
+            ((TextBox)sender).Text = "";
         }
     }
 }
