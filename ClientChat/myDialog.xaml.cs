@@ -25,6 +25,7 @@ namespace ClientChat
         public double ipFeld4 { get; set; }
         public int port { get; set; }
         public string ipAddress { get; set; }
+        MainWindow mw;
 
         public myDialog()
         {
@@ -42,6 +43,8 @@ namespace ClientChat
 
         private void btnOk_Click(object sender, RoutedEventArgs e)
         {
+            mw = new MainWindow();
+
             try
             {
                 ipFeld1 = Convert.ToDouble(tbIp1.Text);

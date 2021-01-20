@@ -16,6 +16,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Threading;
 using System.Threading;
+using System.Text.RegularExpressions;
+
 namespace ClientChat
 
 {
@@ -28,11 +30,13 @@ namespace ClientChat
         public Socket s { get; set; }
         public IPAddress host { get; set; }
         Thread thread_1;
+        public bool isConncted;
 
         private bool connectStatus = false;
         private byte[] bytes;
         private int zustand;
         private string data;
+        private string serverMsg;
 
         public MainWindow()
         {
@@ -42,8 +46,8 @@ namespace ClientChat
             defaultBtns();
             disconnect.IsEnabled = false;
         }
-        
-        private void defaultBtns() 
+
+        private void defaultBtns()
         {
             tbNickname.IsEnabled = false;
             btnAnmelden.IsEnabled = false;
@@ -58,9 +62,9 @@ namespace ClientChat
 
         private void ThreadFunction()
         {
-            data = string.Empty;       
+            data = string.Empty;
 
-            while(connectStatus == true)
+            while (connectStatus == true)
             {
                 try
                 {
@@ -71,7 +75,7 @@ namespace ClientChat
                             data = tbNickname.Text + "+";
                         }));
 
-                        s.Send(Encoding.ASCII.GetBytes(data));
+                        s.Send(Encoding.ASCII.GetBytes(data));                     
 
                         zustand = 0;
                     }
@@ -104,7 +108,7 @@ namespace ClientChat
                             data = tbNickname.Text + ": " + tbChatMessage.Text + "#";
                         }));
 
-                        s.Send(Encoding.ASCII.GetBytes(data));
+                        s.Send(Encoding.ASCII.GetBytes(data));                  
 
                         zustand = 0;
                     }
@@ -114,11 +118,22 @@ namespace ClientChat
                         {
                             bytes = new byte[512];
 
-                            s.Receive(bytes);
+                            s.Receive(bytes);                           
 
                             Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
                             {
-                                tbChatShowMessages.Text += Encoding.ASCII.GetString(bytes) + "\n";
+                                serverMsg = Encoding.ASCII.GetString(bytes);
+
+                                tbChatShowMessages.Text += serverMsg + "\n";
+
+                                if(Regex.IsMatch(serverMsg, "[~]")) 
+                                {
+                                    tbNickname.IsEnabled = true;
+                                    btnAnmelden.IsEnabled = true;
+                                    btnAbmelden.IsEnabled = false;
+                                    tbChatMessage.IsEnabled = false;
+                                    btnAbsenden.IsEnabled = false;
+                                }
                             }));
                         }
                     }
@@ -135,20 +150,31 @@ namespace ClientChat
 
             if (dlg.DialogResult == true)
             {
-                disconnect.IsEnabled = true;
-                connect.IsEnabled = false;
-                tbNickname.IsEnabled = true;
-                btnAnmelden.IsEnabled = true;
-
                 host = IPAddress.Parse(dlg.ipAddress);
 
                 s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                s.Connect(host, dlg.port);
 
-                connectStatus = true;
+                try
+                {
+                    s.Connect(host, dlg.port);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler: " + ex.Message, "Eingabefehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
-                thread_1 = new Thread(ThreadFunction);
-                thread_1.Start();
+                if (s.Connected)
+                {
+                    connectStatus = true;
+
+                    disconnect.IsEnabled = true;
+                    connect.IsEnabled = false;
+                    tbNickname.IsEnabled = true;
+                    btnAnmelden.IsEnabled = true;
+
+                    thread_1 = new Thread(ThreadFunction);
+                    thread_1.Start();
+                }
             }
         }
 
@@ -171,14 +197,21 @@ namespace ClientChat
 
         private void btnAnmelden_Click(object sender, RoutedEventArgs e)
         {
-            zustand = 1;
+            if (tbNickname.Text != "") 
+            {
+                zustand = 1;
 
-            tbNickname.IsEnabled = false;
-            btnAnmelden.IsEnabled = false;
-            btnAbmelden.IsEnabled = true;
-            tbChatShowMessages.IsEnabled = true;
-            tbChatMessage.IsEnabled = true;
-            btnAbsenden.IsEnabled = true;
+                tbNickname.IsEnabled = false;
+                btnAnmelden.IsEnabled = false;
+                btnAbmelden.IsEnabled = true;
+                tbChatShowMessages.IsEnabled = true;
+                tbChatMessage.IsEnabled = true;
+                btnAbsenden.IsEnabled = true;
+            }
+            else 
+            {
+                MessageBox.Show("Nickname darf nicht leer sein!", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void btnAbmelden_Click(object sender, RoutedEventArgs e)
@@ -200,13 +233,21 @@ namespace ClientChat
             try
             {
                 thread_1.Abort();
+                Environment.Exit(0);
             }
             catch { }
         }
 
         private void btnAbsenden_Click(object sender, RoutedEventArgs e)
-        {
-            zustand = 4;
+        {           
+            if (Regex.IsMatch(tbChatMessage.Text, "[+\\-*#~]"))
+            {
+                MessageBox.Show("Folgende Zeichen dürfen nicht verwendet werden: [+ - * # ~", "Eingabefehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else 
+            {
+                zustand = 4;
+            }
         }
 
         private void tbNickname_GotFocus(object sender, RoutedEventArgs e)
