@@ -45,20 +45,7 @@ namespace ClientChat
             tbChatShowMessages.IsReadOnly = true;
             defaultBtns();
             disconnect.IsEnabled = false;
-        }
-
-        private void defaultBtns()
-        {
-            tbNickname.IsEnabled = false;
-            btnAnmelden.IsEnabled = false;
-            btnAbmelden.IsEnabled = false;
-            tbChatMessage.IsEnabled = false;
-            btnAbsenden.IsEnabled = false;
-            tbChatShowMessages.Clear();
-            tbChatMessage.Clear();
-            tbNickname.Clear();
-            //disconnect.IsEnabled = false;
-        }
+        }    
 
         private void ThreadFunction()
         {
@@ -184,11 +171,7 @@ namespace ClientChat
 
             connectStatus = false;
 
-            data = tbNickname.Text + "*";
-
-            s.Send(Encoding.ASCII.GetBytes(data));
-
-            s.Close();
+            disconnectClient();
 
             connect.IsEnabled = true;
             disconnect.IsEnabled = false;
@@ -227,17 +210,7 @@ namespace ClientChat
             tbChatMessage.IsEnabled = false;
             btnAbsenden.IsEnabled = false;
         }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            try
-            {
-                thread_1.Abort();
-                Environment.Exit(0);
-            }
-            catch { }
-        }
-
+       
         private void btnAbsenden_Click(object sender, RoutedEventArgs e)
         {           
             if (Regex.IsMatch(tbChatMessage.Text, "[+\\-*#~]"))
@@ -250,6 +223,57 @@ namespace ClientChat
             }
         }
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                if (thread_1 != null)
+                {
+                    disconnectClient();
+
+                    thread_1.Abort();             
+                }
+                Environment.Exit(0);
+            }
+            catch { }
+        }
+
+        private void close_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (thread_1 != null)
+                {
+                    disconnectClient();
+
+                    thread_1.Abort();
+                }
+                Environment.Exit(0);
+            }
+            catch { }
+        }
+
+        private void defaultBtns()
+        {
+            tbNickname.IsEnabled = false;
+            btnAnmelden.IsEnabled = false;
+            btnAbmelden.IsEnabled = false;
+            tbChatMessage.IsEnabled = false;
+            btnAbsenden.IsEnabled = false;
+            tbChatShowMessages.Clear();
+            tbChatMessage.Clear();
+            tbNickname.Clear();
+            //disconnect.IsEnabled = false;
+        }
+
+        private void disconnectClient() 
+        {       
+            //Damit der Client nachdem schließen des Programms sofort die Verbindung trennt und den Namen frei gibt
+            data = tbNickname.Text + "*";
+            s.Send(Encoding.ASCII.GetBytes(data));
+            s.Close();         
+        }
+
         private void tbNickname_GotFocus(object sender, RoutedEventArgs e)
         {
             ((TextBox)sender).Text = "";
@@ -258,6 +282,6 @@ namespace ClientChat
         private void tbChatMessage_GotFocus(object sender, RoutedEventArgs e)
         {
             ((TextBox)sender).Text = "";
-        }
+        }     
     }
 }

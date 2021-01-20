@@ -19,7 +19,7 @@
                 <MenuItem x:Name="connect" Header="Verbindung herstellen" Click="connect_Click" />
                 <MenuItem x:Name="disconnect" Header="Verbindung trennen" Click="disconnect_Click"/>
                 <Separator></Separator>
-                <MenuItem x:Name="close" Header="Programm beenden"/>
+                <MenuItem x:Name="close" Header="Programm beenden" Click="close_Click"/>
             </MenuItem>
         </Menu>
     </Canvas>
